@@ -5,6 +5,8 @@
 #include <iostream>
 using namespace std;
 
+//size_t noAllocations = 0; 
+
 template<class T>
 class OwnAllocator {
     public:
@@ -42,10 +44,40 @@ class OwnAllocator {
 template <class T>
 typename OwnAllocator<T>::size_type OwnAllocator<T>::noAllocations = 0;
 
+/*
+ * Typename - instructs the compiler to treat the subsequent statement
+ *            as a declaration
+*/
+
+class Object {
+    int data[2];
+    template <class T>
+    static OwnAllocator<T> allocator;
+    static void *operator new(size_t size) {
+    }
+};
+
 int main() {
 
-    vector<int, OwnAllocator<int>> vec(3);
+    vector<int, OwnAllocator<int>> vec;
+    int *p;
+    int arraySize = 10;
+    p = vec.get_allocator().allocate(arraySize);
+    cout << "size(p) = " << sizeof(p) << "\n";
+    cout << "We have to allocate " << arraySize << " objects" << "\n";
+
+    for(int i = 0; i < arraySize; i++) {
+        vec.push_back(i);
+    }
+
+    cout<< vec.size();
+
+    cout << "The vector has elements: \n";
+    for(int i = 0; i < arraySize; i++) {
+        cout << p[i] << " ";
+    }
+
     cout<<vec.get_allocator().get_allocations()<<"\n";
-    cout<<"\n";
+
     return 0;
 }
