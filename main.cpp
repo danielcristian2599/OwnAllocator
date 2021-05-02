@@ -10,7 +10,6 @@ class MemoryPool {
         unsigned int noBlocks;          // number of blocks
         unsigned int sizeOfBlock;       // size of each block
 
-        unsigned int remainingBlocks;   // number of remaining blocks
         unsigned int noInitBlocks;      // number of initialized blocks
         unsigned int noFreeBlocks;      // number of free remaining blocks
 
@@ -21,7 +20,6 @@ class MemoryPool {
         MemoryPool() {
             noBlocks = 0;
             sizeOfBlock = 0;
-            remainingBlocks = 0;
             noInitBlocks = 0;
             noFreeBlocks = 0;
             startPoint = NULL;
@@ -32,9 +30,9 @@ class MemoryPool {
             this->sizeOfBlock = sizeOfBlock;
             this->noBlocks = noBlocks;
             startPoint = new unsigned int[sizeOfBlock * noBlocks];
-            cout << "sizeOfBlock * noBlocks = " << sizeOfBlock * noBlocks << "\n";
+            //cout << "sizeOfBlock * noBlocks = " << sizeOfBlock * noBlocks << "\n";
             noFreeBlocks = noBlocks;
-            nextPoint = startPoint;  // initially, the next free block is the startPoint
+            nextPoint = startPoint;     // initially, the next free block is the startPoint
         }
 
         void deletePool() {
@@ -63,22 +61,19 @@ class MemoryPool {
                // cout << "p_init = " << p << "\n";
                 *p = noInitBlocks + 1;
                 noInitBlocks++;
-               /* cout << "noInitBlk = " << noInitBlocks << " | noFreeBlk = " << noFreeBlocks << "\n";
-                cout << "p = " << *p << " | startPoint = " << startPoint << " \n";
-                cout << "p - startPoint = " << p - startPoint << " \n";
-                */
+               // cout << "noInitBlk = " << noInitBlocks << " | noFreeBlk = " << noFreeBlocks << "\n";
             }
 
             void *retAdr = NULL;
             if(noFreeBlocks > 0) {
                 retAdr = (void*)nextPoint;
-               /* cout<< "ret = " << retAdr << "\n";
-                cout<< "nextPoint = " << nextPoint << "\n";
+               /* cout << "ret = " << retAdr << "\n";
+                  cout << "nextPoint = " << nextPoint << "\n";
                 */
                 --noFreeBlocks;
-              //  cout << "noInitBlk = " << noInitBlocks << " | noFreeBlk = " << noFreeBlocks << "\n";
+                //cout << "noInitBlk = " << noInitBlocks << " | noFreeBlk = " << noFreeBlocks << "\n";
                 if(noFreeBlocks != 0) {
-              //      cout << "*nextPoint = " << *nextPoint << "\n";
+                    //cout << "*nextPoint = " << *nextPoint << "\n";
                     nextPoint = addrFromIndex(*nextPoint);
                 } else {
                     nextPoint = NULL;
@@ -107,7 +102,7 @@ class MemoryPool {
 int main(int argc, char *argv[]) {
     
     if(argc < 1) {
-        cout << "Dimension!\n";
+        cout << "Size error!\n";
     }
 
     int sizeOfBlock = atoi(argv[1]);
@@ -117,20 +112,12 @@ int main(int argc, char *argv[]) {
     
     MP.createPool(sizeOfBlock, noBlocks);
     for(double i = 0; i < noBlocks; i++) {
-       // cout << "----------------------\n";
+        //cout << "----------------------\n";
         //cout << "Iter: " << i << "\n";
         MP.allocate();
     }
 
-/*    cout << "uint = " << sizeof(unsigned int) << " | uchar = " << sizeof(unsigned char) << "\n";
+    //cout << "uint = " << sizeof(unsigned int) << " | uchar = " << sizeof(unsigned char) << "\n";
 
-    cout << "\n --- Dummy test --- \n";
-    int a = 5;
-    int b = 7;
-    int *p_a = &a;
-    int *p_b = &b;
-    int difference = p_b - p_a;
-    cout << "Difference = " << difference << "\n";
-    */
     return 0;
 }

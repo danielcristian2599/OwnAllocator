@@ -41,12 +41,11 @@ int main(int argc, char *argv[]) {
     double size = atoi(argv[1]);
 
     TestClass obj(1,2);
-    cout << sizeof(obj) * size;
-    cout << "\n" << " Sizeof(double) = " << sizeof(double) << "\n";
+    //cout << sizeof(obj) * size;
+    //cout << "\n" << " Sizeof(double) = " << sizeof(double) << "\n";
 
     double *a;
     
-
     for(double i = 0; i < size; i++) {
         a = (double*)malloc(sizeof(double));
     }

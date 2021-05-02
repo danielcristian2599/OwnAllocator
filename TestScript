@@ -1,0 +1,12 @@
+test:
+	echo "noBlocks: 100.000.000"
+	time ./out 100000000
+	time ./outTest 100000000
+
+	echo "noBlocks: 200.000.000"
+	time ./out 200000000
+	time ./outTest 200000000	
+
+	echo "noBlocks: 300.000.000"
+	time ./out 300000000
+	time ./outTest 300000000
