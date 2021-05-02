@@ -5,79 +5,132 @@
 #include <iostream>
 using namespace std;
 
-//size_t noAllocations = 0; 
-
-template<class T>
-class OwnAllocator {
-    public:
-        OwnAllocator() = default;
-        ~OwnAllocator() = default;
-
-        using value_type = T;  // alias for the value type T
-        using pointer = T*;    // alias for a pointer to my type T
-        using size_type = size_t;
-
-        /*
-         * The method which is used to allocate memory.
-         * - it should return my pointer 
-        */
-        pointer allocate(size_type countedObj) {
-            noAllocations += countedObj;
-            return static_cast<pointer>(operator new(sizeof(T) * countedObj));
-        }
-
-        /*
-         * The method which is used to deallocate memory
-        */
-        void deallocate(pointer p, size_type countedObj) {
-            operator delete(p);
-        }
-
-        size_t get_allocations() const {
-            return noAllocations;
-        }
-    
+class MemoryPool {
     private: 
-        static size_t noAllocations;
+        unsigned int noBlocks;          // number of blocks
+        unsigned int sizeOfBlock;       // size of each block
+
+        unsigned int remainingBlocks;   // number of remaining blocks
+        unsigned int noInitBlocks;      // number of initialized blocks
+        unsigned int noFreeBlocks;      // number of free remaining blocks
+
+        unsigned int *startPoint;       // beginning of memory 
+        unsigned int *nextPoint;        // next free block
+    
+    public:
+        MemoryPool() {
+            noBlocks = 0;
+            sizeOfBlock = 0;
+            remainingBlocks = 0;
+            noInitBlocks = 0;
+            noFreeBlocks = 0;
+            startPoint = NULL;
+            nextPoint = 0;
+        }
+
+        void createPool(size_t sizeOfBlock, unsigned int noBlocks) {
+            this->sizeOfBlock = sizeOfBlock;
+            this->noBlocks = noBlocks;
+            startPoint = new unsigned int[sizeOfBlock * noBlocks];
+            cout << "sizeOfBlock * noBlocks = " << sizeOfBlock * noBlocks << "\n";
+            noFreeBlocks = noBlocks;
+            nextPoint = startPoint;  // initially, the next free block is the startPoint
+        }
+
+        void deletePool() {
+            delete[] startPoint;
+            startPoint = NULL;
+        }
+
+        /*
+         * Generate the address (knowing the index)
+         */
+        unsigned int* addrFromIndex(unsigned int index) {
+            return startPoint + (index * sizeOfBlock);
+        }
+
+        /*
+         * Generate the index (knowing the adress)
+         */
+        unsigned int indexFromAddr(unsigned int *p) {
+            return ((p - startPoint) / sizeOfBlock);
+        }
+
+        
+        void* allocate() {
+            if(noInitBlocks < noBlocks) {
+                unsigned int *p = addrFromIndex(noInitBlocks);
+               // cout << "p_init = " << p << "\n";
+                *p = noInitBlocks + 1;
+                noInitBlocks++;
+               /* cout << "noInitBlk = " << noInitBlocks << " | noFreeBlk = " << noFreeBlocks << "\n";
+                cout << "p = " << *p << " | startPoint = " << startPoint << " \n";
+                cout << "p - startPoint = " << p - startPoint << " \n";
+                */
+            }
+
+            void *retAdr = NULL;
+            if(noFreeBlocks > 0) {
+                retAdr = (void*)nextPoint;
+               /* cout<< "ret = " << retAdr << "\n";
+                cout<< "nextPoint = " << nextPoint << "\n";
+                */
+                --noFreeBlocks;
+              //  cout << "noInitBlk = " << noInitBlocks << " | noFreeBlk = " << noFreeBlocks << "\n";
+                if(noFreeBlocks != 0) {
+              //      cout << "*nextPoint = " << *nextPoint << "\n";
+                    nextPoint = addrFromIndex(*nextPoint);
+                } else {
+                    nextPoint = NULL;
+                }
+            } else {
+                cout << "No free blocks!" << "\n";
+            }
+
+            return retAdr;
+        }
+
+        void deallocate(void *p) {
+            if(nextPoint != NULL) {
+                (*(unsigned int*)p) = indexFromAddr(nextPoint);
+                nextPoint = (unsigned int*)p;
+            } else {
+                *((unsigned int*)p) = noBlocks;
+                nextPoint = (unsigned int*)p;
+            }
+            ++noFreeBlocks;
+        }
+
+    
 };
 
-template <class T>
-typename OwnAllocator<T>::size_type OwnAllocator<T>::noAllocations = 0;
-
-/*
- * Typename - instructs the compiler to treat the subsequent statement
- *            as a declaration
-*/
-
-class Object {
-    int data[2];
-    template <class T>
-    static OwnAllocator<T> allocator;
-    static void *operator new(size_t size) {
-    }
-};
-
-int main() {
-
-    vector<int, OwnAllocator<int>> vec;
-    int *p;
-    int arraySize = 10;
-    p = vec.get_allocator().allocate(arraySize);
-    cout << "size(p) = " << sizeof(p) << "\n";
-    cout << "We have to allocate " << arraySize << " objects" << "\n";
-
-    for(int i = 0; i < arraySize; i++) {
-        vec.push_back(i);
+int main(int argc, char *argv[]) {
+    
+    if(argc < 1) {
+        cout << "Dimension!\n";
     }
 
-    cout<< vec.size();
+    int sizeOfBlock = atoi(argv[1]);
+    double noBlocks = atoi(argv[2]);
 
-    cout << "The vector has elements: \n";
-    for(int i = 0; i < arraySize; i++) {
-        cout << p[i] << " ";
+    MemoryPool MP;
+    
+    MP.createPool(sizeOfBlock, noBlocks);
+    for(double i = 0; i < noBlocks; i++) {
+       // cout << "----------------------\n";
+        //cout << "Iter: " << i << "\n";
+        MP.allocate();
     }
 
-    cout<<vec.get_allocator().get_allocations()<<"\n";
+/*    cout << "uint = " << sizeof(unsigned int) << " | uchar = " << sizeof(unsigned char) << "\n";
 
+    cout << "\n --- Dummy test --- \n";
+    int a = 5;
+    int b = 7;
+    int *p_a = &a;
+    int *p_b = &b;
+    int difference = p_b - p_a;
+    cout << "Difference = " << difference << "\n";
+    */
     return 0;
 }
