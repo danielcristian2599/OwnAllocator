@@ -103,7 +103,7 @@ int main(int argc, char *argv[]) {
     
     if(argc < 1) {
         cout << "Size error!\n";
-    }
+    }   
 
     int sizeOfBlock = atoi(argv[1]);
     double noBlocks = atoi(argv[2]);
